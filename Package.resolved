@@ -1,0 +1,15 @@
+{
+  "originHash" : "74be5493123d34e74c8af4f82f1e5b132f3eb9919228f40d705f9e33fb4063ff",
+  "pins" : [
+    {
+      "identity" : "agentruntimekit",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/ajmcclary/AgentRuntimeKit.git",
+      "state" : {
+        "revision" : "09cdaf484aa2d03c86ef14ae0d4ae32e15c43a07",
+        "version" : "0.1.0-beta.1"
+      }
+    }
+  ],
+  "version" : 3
+}
