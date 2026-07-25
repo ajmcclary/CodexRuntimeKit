@@ -39,14 +39,24 @@ import PackageDescription
 // One package dependency: AgentRuntimeKit (CodexAppServerRequestID, the
 // approval/permissions/user-input/elicitation request models,
 // AgentContextUsage, and AgentSessionRunState cross the boundary in
-// public signatures). Swift 5 language mode keeps the moved code
-// byte-behaviorally identical (AgentRuntimeKit / PromptAssemblyKit /
-// ApplyEditsKit / RepoPromptCore promoted-target precedent).
+// public signatures).
+//
+// Swift 6 language mode with StrictConcurrency (2026-07-25 migration).
+// The package is pure value types plus one caller-isolated reference type
+// (CodexToolEventNormalizer), so the Swift 6 checker enforces the
+// isolation model that was previously only documented in comments.
+// Platform floor: macOS 27 / iOS 27 (string form — the .v27 enum case
+// would require tools-version 6.4).
+let swiftSettings: [SwiftSetting] = [
+    .swiftLanguageMode(.v6),
+    .enableExperimentalFeature("StrictConcurrency")
+]
+
 let package = Package(
     name: "CodexRuntimeKit",
     platforms: [
-        .macOS(.v14),
-        .iOS(.v17)
+        .macOS("27.0"),
+        .iOS("27.0")
     ],
     products: [
         .library(name: "CodexRuntimeKit", targets: ["CodexRuntimeKit"])
@@ -61,12 +71,12 @@ let package = Package(
         .target(
             name: "CodexRuntimeKit",
             dependencies: [.product(name: "AgentRuntimeKit", package: "AgentRuntimeKit")],
-            swiftSettings: [.swiftLanguageMode(.v5)]
+            swiftSettings: swiftSettings
         ),
         .testTarget(
             name: "CodexRuntimeKitTests",
             dependencies: ["CodexRuntimeKit"],
-            swiftSettings: [.swiftLanguageMode(.v5)]
+            swiftSettings: swiftSettings
         )
     ]
 )
