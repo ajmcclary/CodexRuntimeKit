@@ -1,3 +1,4 @@
+import Synchronization
 import XCTest
 @testable import CodexRuntimeKit
 
@@ -14,7 +15,7 @@ private struct StubToolNamePolicy: CodexToolNamePolicy {
 	}
 }
 
-private func makeNormalizer(clock: (() -> Date)? = nil) -> CodexToolEventNormalizer {
+private func makeNormalizer(clock: (@Sendable () -> Date)? = nil) -> CodexToolEventNormalizer {
 	if let clock {
 		return CodexToolEventNormalizer(toolNamePolicy: StubToolNamePolicy(), clock: clock)
 	}
@@ -37,12 +38,14 @@ final class CodexToolEventNormalizerTests: XCTestCase {
 	}
 
 	func testMirrorRejectsCrossFamilyWithinTTLAndAcceptsAfterExpiry() {
-		var current = Date(timeIntervalSince1970: 1_000_000)
-		let normalizer = makeNormalizer(clock: { current })
+		// The clock is read from a @Sendable closure, so the test's notion of
+		// "now" needs a real owner rather than a captured var.
+		let current = Mutex(Date(timeIntervalSince1970: 1_000_000))
+		let normalizer = makeNormalizer(clock: { current.withLock { $0 } })
 		XCTAssertTrue(normalizer.shouldAcceptCommandExecutionEvent(itemID: "item", family: .raw))
 		XCTAssertFalse(normalizer.shouldAcceptCommandExecutionEvent(itemID: "item", family: .normalized))
 		XCTAssertTrue(normalizer.shouldAcceptCommandExecutionEvent(itemID: "item", family: .raw))
-		current = current.addingTimeInterval(31 * 60)
+		current.withLock { $0 = $0.addingTimeInterval(31 * 60) }
 		XCTAssertTrue(normalizer.shouldAcceptCommandExecutionEvent(itemID: "item", family: .normalized))
 	}
 
