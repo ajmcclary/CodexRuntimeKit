@@ -735,7 +735,8 @@ extension CodexToolEventNormalizer {
 		)
 		let resultJSON = applyPatchResultJSON(
 			from: candidate,
-			accumulatedOutput: existingState?.accumulatedOutput
+			accumulatedOutput: existingState?.accumulatedOutput,
+			isCompletedLifecycle: isCompleted
 		)
 
 		if isStarted {
@@ -794,10 +795,23 @@ extension CodexToolEventNormalizer {
 		return jsonString(from: payload)
 	}
 
-	private func applyPatchResultJSON(from candidate: [String: Any], accumulatedOutput: String?) -> String {
+	/// `isCompletedLifecycle` must be threaded through: it is what makes an
+	/// `item/completed` carrying NO status resolve to "success" instead of
+	/// falling back to "running". The parameter defaults to `false` on
+	/// `normalizedApplyPatchStatus`, so omitting it here silently produced a
+	/// completed apply_patch result whose status still read "running", while
+	/// the sibling `statusInfo` in `parseFileChangeLifecycleEvent` — computed
+	/// WITH the flag — correctly said "success". The two disagreed inside one
+	/// event.
+	private func applyPatchResultJSON(
+		from candidate: [String: Any],
+		accumulatedOutput: String?,
+		isCompletedLifecycle: Bool
+	) -> String {
 		let changePayloads = applyPatchChangePayloads(from: candidate)
 		let statusInfo = Self.normalizedApplyPatchStatus(
-			from: stringValue(from: candidate, keys: ["status"])
+			from: stringValue(from: candidate, keys: ["status"]),
+			isCompletedLifecycle: isCompletedLifecycle
 		)
 		var payload: [String: Any] = [
 			"status": statusInfo.status,
