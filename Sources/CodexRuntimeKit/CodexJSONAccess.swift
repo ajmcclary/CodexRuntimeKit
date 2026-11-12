@@ -228,9 +228,9 @@ public enum CodexJSONAccess {
 		case let number as Int64:
 			return Int(number)
 		case let number as UInt:
-			return Int(number)
+			return Int(exactly: number)
 		case let number as UInt64:
-			return Int(number)
+			return Int(exactly: number)
 		case let number as Double:
 			return intValueFromFloatingPoint(number)
 		case let number as Float:
@@ -254,7 +254,9 @@ public enum CodexJSONAccess {
 
 	private static func intValueFromFloatingPoint(_ value: Double) -> Int? {
 		guard value.isFinite else { return nil }
-		guard value >= Double(Int.min), value <= Double(Int.max) else { return nil }
+		// Double(Int.max) rounds up to 2^63, which does not fit, so the upper
+		// bound must be strict. Double(Int.min) is exactly -2^63 and fits.
+		guard value >= Double(Int.min), value < Double(Int.max) else { return nil }
 		return Int(value)
 	}
 
@@ -293,8 +295,31 @@ public enum CodexJSONAccess {
 
 	private static func int64ValueFromFloatingPoint(_ value: Double) -> Int64? {
 		guard value.isFinite else { return nil }
-		guard value >= Double(Int64.min), value <= Double(Int64.max) else { return nil }
+		// Strict upper bound: Double(Int64.max) is 2^63, one past the range.
+		guard value >= Double(Int64.min), value < Double(Int64.max) else { return nil }
 		return Int64(value)
+	}
+
+	// MARK: - Wire arithmetic
+	//
+	// Counts and durations read from the app-server are untrusted; summing or
+	// scaling them with plain `+`/`*` traps on overflow. These saturate at the
+	// Int bounds instead.
+
+	static func saturatingSum(_ values: [Int]) -> Int {
+		values.reduce(0) { saturatingAdd($0, $1) }
+	}
+
+	static func saturatingAdd(_ lhs: Int, _ rhs: Int) -> Int {
+		let (result, overflow) = lhs.addingReportingOverflow(rhs)
+		guard overflow else { return result }
+		return rhs > 0 ? Int.max : Int.min
+	}
+
+	static func saturatingMultiply(_ lhs: Int, _ rhs: Int) -> Int {
+		let (result, overflow) = lhs.multipliedReportingOverflow(by: rhs)
+		guard overflow else { return result }
+		return (lhs < 0) == (rhs < 0) ? Int.max : Int.min
 	}
 
 	// MARK: - Dictionary primitives

@@ -299,7 +299,10 @@ extension CodexToolEventNormalizer {
 			if let duration = message["duration"] as? [String: Any] {
 				let secs = CodexJSONAccess.intValue(duration["secs"]) ?? 0
 				let nanos = CodexJSONAccess.intValue(duration["nanos"]) ?? 0
-				let computed = max(0, secs) * 1000 + max(0, nanos) / 1_000_000
+				let computed = CodexJSONAccess.saturatingAdd(
+					CodexJSONAccess.saturatingMultiply(max(0, secs), 1000),
+					max(0, nanos) / 1_000_000
+				)
 				return computed > 0 ? computed : nil
 			}
 			if let explicit = CodexJSONAccess.intValue(message["duration_ms"]) ?? CodexJSONAccess.intValue(message["durationMs"]),

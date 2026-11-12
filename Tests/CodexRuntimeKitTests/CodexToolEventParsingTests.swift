@@ -105,6 +105,22 @@ final class CodexToolEventParsingTests: XCTestCase {
 		XCTAssertEqual(endEvent?.dedupKey, "call-9")
 	}
 
+	func testExecCommandEndEventSaturatesHugeDurationInsteadOfOverflowing() {
+		let normalizer = makeNormalizer()
+		let end: [String: Any] = [
+			"msg": [
+				"type": "exec_command_end",
+				"call_id": "call-10",
+				"exit_code": 0,
+				"duration": ["secs": 9_223_372_036_854_776, "nanos": 0]
+			]
+		]
+		let endEvent = normalizer.parseExecCommandEndEvent(params: end)
+		XCTAssertNotNil(endEvent)
+		let result = endEvent.flatMap { CodexJSONAccess.object(from: $0.resultJSON) }
+		XCTAssertEqual(result?["durationMs"] as? Int, Int.max)
+	}
+
 	func testInvocationIDIsDeterministicForNonUUIDItemIDs() {
 		let normalizer = makeNormalizer()
 		let a = normalizer.invocationID(from: "call_abc123")

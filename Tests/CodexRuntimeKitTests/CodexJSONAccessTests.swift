@@ -123,6 +123,38 @@ final class CodexJSONAccessTests: XCTestCase {
 		XCTAssertNil(CodexJSONAccess.int64Value(Double.nan))
 	}
 
+	func testIntCoercionRejectsOutOfRangeWireNumbersWithoutTrapping() {
+		// i64::MAX arrives through CodexJSONValue as the double 2^63.
+		let twoTo63 = Double(Int.max)
+		XCTAssertNil(CodexJSONAccess.intValue(twoTo63))
+		XCTAssertNil(CodexJSONAccess.int64Value(twoTo63))
+		XCTAssertNil(CodexJSONAccess.intValue(-twoTo63 * 2))
+		XCTAssertEqual(CodexJSONAccess.intValue(-twoTo63), Int.min)
+		// u64::MAX arrives from JSONSerialization as an unsigned NSNumber.
+		XCTAssertNil(CodexJSONAccess.intValue(UInt64.max))
+		XCTAssertNil(CodexJSONAccess.intValue(UInt.max))
+		XCTAssertEqual(CodexJSONAccess.intValue(UInt64(Int.max)), Int.max)
+		let raw = CodexJSONAccess.object(from: #"{"big":18446744073709551615,"max":9223372036854775807}"#)
+		XCTAssertNil(CodexJSONAccess.intValue(raw?["big"]))
+		XCTAssertNil(CodexJSONAccess.int64Value(raw?["big"]))
+		XCTAssertEqual(CodexJSONAccess.intValue(raw?["max"]), Int.max)
+		XCTAssertNil(CodexJSONAccess.intValue("1e30"))
+		let viaValue = CodexJSONValue.from(raw ?? [:])?.toAny() as? [String: Any]
+		XCTAssertNil(CodexJSONAccess.intValue(viaValue?["max"]))
+	}
+
+	func testUsageTotalTokensSaturatesInsteadOfOverflowing() {
+		let usage: [String: Any] = [
+			"inputTokens": 5_000_000_000_000_000_000 as Double,
+			"outputTokens": 5_000_000_000_000_000_000 as Double
+		]
+		XCTAssertEqual(CodexNotificationInterpreter.usageTotalTokens(from: usage), Int.max)
+		XCTAssertEqual(
+			CodexNotificationInterpreter.usageTotalTokens(from: ["input_tokens": 3, "output_tokens": 4]),
+			7
+		)
+	}
+
 	func testNormalizeApprovalKeyStripsSeparators() {
 		XCTAssertEqual(CodexJSONAccess.normalizeApprovalKey(" Tool_Name-x "), "toolnamex")
 	}

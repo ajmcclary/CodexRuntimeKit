@@ -629,7 +629,7 @@ public enum CodexNotificationInterpreter {
 		if input == nil && cachedInput == nil && output == nil && reasoningOutput == nil {
 			return nil
 		}
-		return (input ?? 0) + (cachedInput ?? 0) + (output ?? 0) + (reasoningOutput ?? 0)
+		return CodexJSONAccess.saturatingSum([input ?? 0, cachedInput ?? 0, output ?? 0, reasoningOutput ?? 0])
 	}
 
 	// MARK: - Turn status
