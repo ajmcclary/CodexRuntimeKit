@@ -1,13 +1,13 @@
 {
-  "originHash" : "c6c3dc6b4c304733ed041cf17f7626c6cf4b8ee6ab43c14011831c04a50a33d2",
+  "originHash" : "2e8dd87f0968d287bdee3a6e6dc49f434d718eb420024d01915bf0dfc209e492",
   "pins" : [
     {
       "identity" : "agentruntimekit",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/ajmcclary/AgentRuntimeKit.git",
       "state" : {
-        "revision" : "5b671bb221de2d19cc4d3456cf3013568b2743ca",
-        "version" : "0.1.0-beta.2"
+        "revision" : "9d09db1b2e974eebb5c753e1451f480cdaaea0b9",
+        "version" : "0.1.0-beta.3"
       }
     }
   ],
