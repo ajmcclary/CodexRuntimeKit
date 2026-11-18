@@ -67,9 +67,9 @@ transcript projection, persistence, and UI.
 
 ```swift
 dependencies: [
-    // 0.1.0-beta.5 is a prerelease identifier — SwiftPM only resolves
+    // 0.1.0-beta.6 is a prerelease identifier — SwiftPM only resolves
     // prerelease tags when the lower bound itself names one.
-    .package(url: "https://github.com/ajmcclary/CodexRuntimeKit.git", .upToNextMinor(from: "0.1.0-beta.5"))
+    .package(url: "https://github.com/ajmcclary/CodexRuntimeKit.git", .upToNextMinor(from: "0.1.0-beta.6"))
 ]
 ```
 
@@ -79,9 +79,9 @@ dependencies: [
 ])
 ```
 
-Several public signatures use AgentRuntimeKit types (for example `CodexAppServerRequestID`,
-`AgentApprovalRequest`, `AgentContextUsage`); if your code names them, also depend on
-AgentRuntimeKit and `import AgentRuntimeKit`.
+`import CodexRuntimeKit` also re-exports AgentRuntimeKit, whose types (for example
+`CodexAppServerRequestID`, `AgentApprovalRequest`, `AgentContextUsage`) appear in this
+package's public API, so you don't need a separate dependency to name them.
 
 ## Usage
 
