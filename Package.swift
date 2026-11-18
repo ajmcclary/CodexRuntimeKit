@@ -26,11 +26,11 @@ import PackageDescription
 // Scripts/update-codex-protocol); and the pure backoff, command-execution,
 // and model-upgrade policies.
 //
-// Deliberately OUT of scope (the later CodexAppServerKit and the app):
-// the Codex app-server process transport, JSON-RPC codec, stdout stream
+// Deliberately OUT of scope (CodexAppServerKit and the host app): the
+// Codex app-server process transport, JSON-RPC codec, stdout stream
 // framing, pending-request store, process launch and PID ownership, and
-// termination policy (RepoPromptCore's CodexAppServerRuntime target owns
-// that machinery for now); CLI launch profiles, executable resolution and
+// termination policy (all owned by CodexAppServerKit, which does not
+// depend on this package); CLI launch profiles, executable resolution and
 // environment composition, authentication/refresh execution, provider
 // selection, app settings and recovery policy, AgentChatItem projection,
 // persistence, and all UI. This package is intentionally Codex-specific —
